@@ -1,0 +1,144 @@
+# Phase 1 proposed allowlist for selected GOV.UK employment guidance.
+# Source records preserve GOV.UK metadata and attribution.
+# Content hashes and local fetch timestamps belong to each Phase 2 ingestion snapshot.
+
+allowlist_version = 1
+verified_on = "2026-10-10"
+api_base_url = "https://www.gov.uk/api/content"
+attribution = "Contains public sector information licensed under the Open Government Licence v3.0."
+licence_url = "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+
+[[sources]]
+id = "employment-status"
+title = "Employment status"
+public_url = "https://www.gov.uk/employment-status"
+api_path = "/employment-status"
+canonical_path = "/employment-status"
+content_id = "a42b5782-4b48-4d9e-838c-98fd1e679c2b"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2015-02-12T10:00:03+00:00"
+updated_at = "2026-10-05T12:29:00+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "employment-contracts-and-conditions"
+title = "Employment contracts"
+public_url = "https://www.gov.uk/employment-contracts-and-conditions"
+api_path = "/employment-contracts-and-conditions"
+canonical_path = "/employment-contracts-and-conditions"
+content_id = "65c41235-b98f-4991-a1cb-fb4b9d1be105"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2020-04-06T00:01:15+01:00"
+updated_at = "2026-10-05T12:29:15+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "holiday-entitlement-rights"
+title = "Holiday entitlement"
+public_url = "https://www.gov.uk/holiday-entitlement-rights"
+api_path = "/holiday-entitlement-rights"
+canonical_path = "/holiday-entitlement-rights"
+content_id = "a57d3670-b8bd-4aac-92dc-7dcebd1e55d8"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2014-11-17T13:29:29+00:00"
+updated_at = "2026-10-05T15:21:44+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "taking-sick-leave"
+title = "Taking sick leave"
+public_url = "https://www.gov.uk/taking-sick-leave"
+api_path = "/taking-sick-leave"
+canonical_path = "/taking-sick-leave"
+content_id = "8b88113b-d507-4b1d-b5d3-07f8e10cb1ff"
+document_type = "answer"
+schema_name = "answer"
+phase = "live"
+public_updated_at = "2015-02-10T17:13:44+00:00"
+updated_at = "2026-10-05T12:28:59+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "statutory-sick-pay"
+title = "Statutory Sick Pay (SSP)"
+public_url = "https://www.gov.uk/statutory-sick-pay"
+api_path = "/statutory-sick-pay"
+canonical_path = "/statutory-sick-pay"
+content_id = "a3a65884-3ecc-454c-8a16-1257448cf6fe"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2015-03-09T14:15:47+00:00"
+updated_at = "2026-10-05T12:29:19+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "maximum-weekly-working-hours"
+title = "Maximum weekly working hours"
+public_url = "https://www.gov.uk/maximum-weekly-working-hours"
+api_path = "/maximum-weekly-working-hours"
+canonical_path = "/maximum-weekly-working-hours"
+content_id = "91bfcfaf-5e54-40a2-8762-62a2ad5a0074"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2015-03-09T17:20:19+00:00"
+updated_at = "2026-10-05T12:29:06+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "redundancy-your-rights"
+title = "Redundancy: your rights"
+public_url = "https://www.gov.uk/redundancy-your-rights"
+api_path = "/redundancy-your-rights"
+canonical_path = "/redundancy-your-rights"
+content_id = "f14d9026-2d74-4a1d-aad3-7dddff9de029"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2024-11-08T15:45:22+00:00"
+updated_at = "2026-10-05T15:21:45+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "dismissal"
+title = "Dismissal: your rights"
+public_url = "https://www.gov.uk/dismissal"
+api_path = "/dismissal"
+canonical_path = "/dismissal"
+content_id = "85be4ed7-426f-4561-af75-ea683d37ce2c"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2020-04-07T16:41:07+01:00"
+updated_at = "2026-10-05T12:29:16+01:00"
+withdrawn = false
+review_status = "proposed"
+
+[[sources]]
+id = "maternity-pay-leave"
+title = "Maternity pay and leave"
+public_url = "https://www.gov.uk/maternity-pay-leave"
+api_path = "/maternity-pay-leave"
+canonical_path = "/maternity-pay-leave"
+content_id = "24d6d3fc-ab41-456d-adc7-a265674b45cc"
+document_type = "guide"
+schema_name = "guide"
+phase = "live"
+public_updated_at = "2015-04-06T00:01:49+01:00"
+updated_at = "2026-10-05T12:29:17+01:00"
+withdrawn = false
+review_status = "proposed"

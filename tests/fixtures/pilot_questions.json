@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "description": "Phase 1 pilot questions. Expected facts are annotation targets, not answer templates.",
+  "questions": [
+    {
+      "id": "Q01",
+      "category": "employment_status",
+      "kind": "supported",
+      "question": "My contract calls me self-employed, but I have to do the work myself and my manager sets when and how I do it. What should I look at to understand my employment status?",
+      "expected_source_ids": ["employment-status"],
+      "expected_facts": [
+        "Employment law recognises worker, employee, and self-employed status categories.",
+        "Relevant worker indicators can include personal service, a limited right to send a substitute, and supervision or control; these indicators do not decide an individual case on their own.",
+        "Status affects rights and employer responsibilities; the contract label alone should not be treated as a final legal decision.",
+        "Employment status for tax can differ from employment law status."
+      ],
+      "answer_note": "Explain relevant general factors and avoid deciding the user's legal status from a short description."
+    },
+    {
+      "id": "Q02",
+      "category": "contracts",
+      "kind": "supported",
+      "question": "Does my employment contract have to be written down, and when can it start?",
+      "expected_source_ids": ["employment-contracts-and-conditions"],
+      "expected_facts": [
+        "An employment contract does not have to be written down.",
+        "A contract can exist as soon as a person accepts a job offer.",
+        "The written statement of employment particulars is a distinct written document covered by the guide."
+      ]
+    },
+    {
+      "id": "Q03",
+      "category": "holiday_entitlement_and_pay",
+      "kind": "supported",
+      "question": "Do bank holidays have to be extra days on top of my annual leave, and how should I check that my holiday pay is right?",
+      "expected_source_ids": ["holiday-entitlement-rights"],
+      "expected_facts": [
+        "Almost all workers are entitled to 5.6 weeks of paid annual leave, subject to the guide's stated rules and limits.",
+        "An employer can include bank holidays within statutory annual leave; they do not have to be extra paid leave.",
+        "The guide has a separate holiday-pay section; the answer should explain that the calculation depends on working pattern and pay details rather than inventing a figure."
+      ],
+      "answer_note": "Do not calculate an individual's holiday pay without the necessary pay and working-pattern facts."
+    },
+    {
+      "id": "Q04",
+      "category": "sick_leave_and_statutory_sick_pay",
+      "kind": "supported",
+      "question": "I am an employee and have been off sick for four days. Do I need a fit note, and does being off sick automatically mean I get Statutory Sick Pay?",
+      "expected_source_ids": ["taking-sick-leave", "statutory-sick-pay"],
+      "expected_facts": [
+        "Employees off work sick for 7 days or less do not need a fit note or other healthcare-professional proof; the employer can ask for self-certification.",
+        "Being off sick does not by itself establish SSP eligibility; the separate SSP guidance sets eligibility conditions.",
+        "Do not state a current SSP rate or decide eligibility without checking the current guidance and the worker's circumstances."
+      ],
+      "answer_note": "The evidence should distinguish sick-leave proof rules from SSP eligibility."
+    },
+    {
+      "id": "Q05",
+      "category": "working_hours",
+      "kind": "supported",
+      "question": "Can my employer make me work more than 48 hours a week, and what does opting out mean?",
+      "expected_source_ids": ["maximum-weekly-working-hours"],
+      "expected_facts": [
+        "The guide describes a 48-hour average weekly limit for most workers, with exceptions and a reference period.",
+        "A worker can agree to opt out of the limit, and the decision must be voluntary."
+      ],
+      "answer_note": "Mention that the rule is an average and that the guide lists exceptions."
+    },
+    {
+      "id": "Q06",
+      "category": "redundancy",
+      "kind": "supported",
+      "question": "My employer says my role is redundant. What should I expect about fair selection and consultation?",
+      "expected_source_ids": ["redundancy-your-rights"],
+      "expected_facts": [
+        "Selection should use a fair and objective method, and protected or otherwise prohibited reasons cannot be used to select someone.",
+        "The guide explains consultation rights and related redundancy processes; requirements can depend on the circumstances and number of affected employees."
+      ],
+      "answer_note": "Avoid deciding whether a particular selection was fair without the process details."
+    },
+    {
+      "id": "Q07",
+      "category": "dismissal",
+      "kind": "ambiguous",
+      "question": "I was dismissed shortly after raising a safety concern at work. Was that automatically unfair?",
+      "expected_source_ids": ["dismissal"],
+      "expected_facts": [
+        "Some reasons connected with health and safety can make a dismissal automatically unfair.",
+        "Whether the protection applies depends on the facts, the worker's status, and the reason for dismissal; the source cannot determine the user's case."
+      ],
+      "answer_note": "Give general guidance, identify missing facts, and do not conclude that this dismissal was automatically unfair."
+    },
+    {
+      "id": "Q08",
+      "category": "maternity_leave_and_pay",
+      "kind": "supported",
+      "question": "Do I need a minimum length of service to take Statutory Maternity Leave, and is Statutory Maternity Pay based on the same eligibility rules?",
+      "expected_source_ids": ["maternity-pay-leave"],
+      "expected_facts": [
+        "Statutory Maternity Leave eligibility applies to employees who give the correct notice and does not depend on length of service, hours, or pay.",
+        "Statutory Maternity Pay has separate eligibility requirements, including a qualifying period and earnings conditions."
+      ],
+      "answer_note": "Separate leave eligibility from pay eligibility and avoid quoting changeable monetary thresholds."
+    },
+    {
+      "id": "Q09",
+      "category": "unsupported_topic",
+      "kind": "unsupported",
+      "question": "How much must my employer contribute to my workplace pension each month?",
+      "expected_source_ids": [],
+      "expected_facts": [],
+      "answer_note": "Pensions are outside the MVP source scope; return a clear insufficient-evidence response rather than guessing."
+    },
+    {
+      "id": "Q10",
+      "category": "out_of_scope_topic",
+      "kind": "out_of_scope",
+      "question": "Can you help me write a CV for a job?",
+      "expected_source_ids": [],
+      "expected_facts": [],
+      "answer_note": "Job-search advice is outside the v1 employment-guidance topics. Return a clear out-of-scope response."
+    }
+  ]
+}

@@ -2,13 +2,13 @@
 
 ## Project purpose and scope
 
-Build the Worker Employment Information Assistant described in [MVP.md](MVP.md). The phased implementation plan and phase acceptance criteria are in [PLAN.md](PLAN.md); follow them in order and work only on the current stage the user has requested.
+Build the GOV.UK Employment Guidance Assistant described in [MVP.md](MVP.md). The phased implementation plan and phase acceptance criteria are in [PLAN.md](PLAN.md); follow them in order and work only on the current stage the user has requested.
 
-- Help workers and employees understand their own workplace rights using a reviewed set of GOV.UK guidance.
-- V1 covers England only. Ask for the user's UK nation and clearly return an out-of-scope response for Scotland, Wales, and Northern Ireland.
-- This is general information, not legal advice. Show evidence and abstain when the evidence is insufficient.
+- Help workers and employees find and understand employment guidance from a reviewed set of GOV.UK pages.
+- Do not ask users for location information or classify sources by location. Present answers as summaries of the cited GOV.UK content, not as a decision about an individual's rights.
+- Show evidence and abstain when the evidence is insufficient. Do not present the service as legal advice.
 - Keep the corpus curated. Fetch only allowlisted page paths through the GOV.UK Content API; do not crawl related pages automatically.
-- Preserve each source's real coverage and provenance. Validate citation IDs on the backend and render URLs from stored source records, never from model output.
+- Preserve each source's provenance. Validate citation IDs on the backend and render URLs from stored source records, never from model output.
 - Keep the first version local. Do not add accounts, persistent chat history, cloud hosting, hybrid search, reranking, agents, or other excluded features without explicit direction.
 
 ## Work with the user
