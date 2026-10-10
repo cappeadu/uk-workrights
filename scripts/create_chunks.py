@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 SOURCE_METADATA_FILE = PROCESSED_DATA_DIR / "source_metadata.json"
 CHUNKS_FILE = PROCESSED_DATA_DIR / "chunks.jsonl"
+CHUNK_REVIEW_FILE = PROCESSED_DATA_DIR / "chunks_review.md"
 DEFAULT_TARGET_WORDS = 200
 DEFAULT_OVERLAP_WORDS = 30
 
@@ -400,6 +401,51 @@ def build_all_chunks(
     return records, failures
 
 
+def render_review_markdown(records: list[dict[str, object]]) -> str:
+    """Create a readable Markdown view grouped by source and chunk."""
+    lines = [
+        "# GOV.UK chunk review",
+        "",
+        "Generated alongside `chunks.jsonl` for human review.",
+        "",
+    ]
+    current_source_id: str | None = None
+    for record in records:
+        source = record["source"]
+        source_id = str(record["source_id"])
+        if source_id != current_source_id:
+            if current_source_id is not None:
+                lines.extend(["", "---", ""])
+            title = str(source["title"])
+            url = str(source["canonical_url"])
+            lines.extend(
+                [
+                    f"## {title}",
+                    "",
+                    f"Source: [{title}]({url})",
+                    f"Attribution: {source['attribution']}",
+                    "",
+                ]
+            )
+            current_source_id = source_id
+
+        section = " / ".join(record["heading_path"]) or "Page content"
+        text_lines = str(record["text"]).splitlines()
+        quoted_text = [f"> {line}" if line else ">" for line in text_lines]
+        lines.extend(
+            [
+                f"### {record['chunk_id']}",
+                "",
+                f"**Section:** {section}  ",
+                f"**Words:** {word_count(str(record['text']))}",
+                "",
+                *quoted_text,
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Create deterministic chunks from extracted GOV.UK source pages."
@@ -418,6 +464,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--output", type=Path, default=CHUNKS_FILE, help="Output JSONL file"
+    )
+    parser.add_argument(
+        "--review-output",
+        type=Path,
+        default=CHUNK_REVIEW_FILE,
+        help="Human-readable Markdown review file",
     )
     parser.add_argument(
         "--target-words",
@@ -446,9 +498,13 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     content = "\n".join(json.dumps(record, ensure_ascii=False) for record in records)
     args.output.write_text(content + "\n", encoding="utf-8")
+    review = render_review_markdown(records)
+    args.review_output.parent.mkdir(parents=True, exist_ok=True)
+    args.review_output.write_text(review, encoding="utf-8")
     print(
         f"Created {len(records)} chunks from {len(sources)} approved sources at {args.output}."
     )
+    print(f"Human-readable review saved to {args.review_output}.")
     return 0
 
 

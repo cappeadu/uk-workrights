@@ -120,6 +120,7 @@ def test_cli_does_not_write_partial_chunks_when_a_source_file_is_missing(
         processed_markdown(first_source), encoding="utf-8"
     )
     output_path = tmp_path / "chunks.jsonl"
+    review_path = tmp_path / "chunks_review.md"
     monkeypatch.setattr(
         "sys.argv",
         [
@@ -130,11 +131,14 @@ def test_cli_does_not_write_partial_chunks_when_a_source_file_is_missing(
             str(metadata_path),
             "--output",
             str(output_path),
+            "--review-output",
+            str(review_path),
         ],
     )
 
     assert main() == 1
     assert not output_path.exists()
+    assert not review_path.exists()
 
 
 def test_cli_writes_source_linked_jsonl_for_valid_inputs(tmp_path, monkeypatch):
@@ -145,6 +149,7 @@ def test_cli_writes_source_linked_jsonl_for_valid_inputs(tmp_path, monkeypatch):
         processed_markdown(source), encoding="utf-8"
     )
     output_path = tmp_path / "chunks.jsonl"
+    review_path = tmp_path / "chunks_review.md"
     monkeypatch.setattr(
         "sys.argv",
         [
@@ -155,6 +160,8 @@ def test_cli_writes_source_linked_jsonl_for_valid_inputs(tmp_path, monkeypatch):
             str(metadata_path),
             "--output",
             str(output_path),
+            "--review-output",
+            str(review_path),
         ],
     )
 
@@ -164,3 +171,11 @@ def test_cli_writes_source_linked_jsonl_for_valid_inputs(tmp_path, monkeypatch):
     chunk = json.loads(lines[0])
     assert chunk["source_id"] == source["source_id"]
     assert chunk["source"]["content_id"] == source["content_id"]
+
+    review = review_path.read_text(encoding="utf-8")
+    assert "## Example guide" in review
+    assert f"Source: [{source['title']}]({source['canonical_url']})" in review
+    assert "### example-guide-0001" in review
+    assert "**Section:** Main topic / Eligibility" in review
+    assert "> - First rule" in review
+    assert "> | Requirement | Evidence |" in review
