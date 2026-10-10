@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
 import tomllib
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -31,6 +33,8 @@ class FetchResult:
     detail: str
     http_status: int | None = None
     saved_path: Path | None = None
+    fetched_at: str | None = None
+    content_sha256: str | None = None
 
 
 def load_sources(path: Path) -> tuple[str, list[dict[str, object]]]:
@@ -95,6 +99,31 @@ def contains_page_text(details: object) -> bool:
 def save_response(output_dir: Path, source_id: str, suffix: str, body: bytes) -> Path:
     path = output_dir / f"{source_id}{suffix}"
     path.write_bytes(body)
+    return path
+
+
+def write_fetch_manifest(
+    output_dir: Path,
+    api_base_url: str,
+    sources: list[dict[str, object]],
+    results: list[FetchResult],
+) -> Path:
+    """Save the local fetch time and hash for each response in this run."""
+    result_by_id = {result.source_id: result for result in results}
+    manifest = {
+        "sources": [
+            {
+                "source_id": str(source["id"]),
+                "requested_url": f"{api_base_url}{source['api_path']}",
+                "status": result_by_id[str(source["id"])].status,
+                "fetched_at": result_by_id[str(source["id"])].fetched_at,
+                "content_sha256": result_by_id[str(source["id"])].content_sha256,
+            }
+            for source in sources
+        ]
+    }
+    path = output_dir / "fetch_manifest.json"
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return path
 
 
@@ -282,6 +311,16 @@ def main() -> int:
     ]
 
     for result in results:
+        if result.saved_path and result.saved_path.exists():
+            response_bytes = result.saved_path.read_bytes()
+            result.fetched_at = datetime.fromtimestamp(
+                result.saved_path.stat().st_mtime, tz=UTC
+            ).isoformat()
+            result.content_sha256 = hashlib.sha256(response_bytes).hexdigest()
+
+    manifest_path = write_fetch_manifest(args.output_dir, api_base_url, sources, results)
+
+    for result in results:
         status_text = (
             f"HTTP {result.http_status}"
             if result.http_status is not None
@@ -296,6 +335,7 @@ def main() -> int:
     print(
         f"\nFetched {successful} of {len(results)} approved sources. Responses are in {args.output_dir}."
     )
+    print(f"Fetch metadata saved to {manifest_path}.")
     return 0 if successful == len(results) else 1
 
 
