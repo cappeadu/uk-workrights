@@ -30,7 +30,7 @@ Track work by checking off the stages below. Install dependencies as each phase 
 
 **Build:** Approve the worker-facing topic scope, review an initial allowlist of about 8–12 page-specific GOV.UK sources, and create a small labeled question set. Confirm each source's actual content path, status, and content type from its Content API response. Record supported source pages and facts for 10 worker questions. Do not discover sources by crawling links.
 
-**Stages**
+**Stages.**
 
 - [ ] Finalize the worker-facing topics and define out-of-scope handling for questions beyond the selected v1 guidance.
 - [ ] Select and review the initial allowlist, including sources for contracts, sick leave, and maternity guidance as well as the other in-scope topics.
