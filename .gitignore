@@ -1,0 +1,42 @@
+# Python bytecode and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test, type-checker, and formatter caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Downloaded or generated project data
+/data/raw/
+/data/processed/
+/qdrant_storage/
+/models/
+/.cache/
+*.log
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
