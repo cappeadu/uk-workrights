@@ -6,16 +6,14 @@
       "id": "Q01",
       "category": "employment_status",
       "kind": "supported",
-      "question": "My contract calls me self-employed, but I have to do the work myself and my manager sets when and how I do it. What should I look at to understand my employment status?",
+      "question": "My boss says I cannot send someone else to do my work and tells me how to do it. Is that relevant when working out my employment status?",
       "expected_source_ids": ["employment-status"],
-      "expected_chunk_ids": ["employment-status-0001", "employment-status-0002", "employment-status-0007"],
+      "expected_chunk_ids": ["employment-status-0002", "employment-status-0007"],
       "expected_facts": [
-        "Employment law recognises worker, employee, and self-employed status categories.",
-        "Relevant worker indicators can include personal service, a limited right to send a substitute, and supervision or control; these indicators do not decide an individual case on their own.",
-        "Status affects rights and employer responsibilities; the contract label alone should not be treated as a final legal decision.",
-        "Employment status for tax can differ from employment law status."
+        "A worker may have an arrangement to provide work or services personally for reward, with only a limited right to send someone else.",
+        "Employee indicators can include a manager controlling workload or how work is done and not being able to send someone else to do the work."
       ],
-      "answer_note": "Explain relevant general factors and avoid deciding the user's legal status from a short description."
+      "answer_note": "Explain these as general factors and avoid deciding the user's employment status from a short description."
     },
     {
       "id": "Q02",
@@ -34,7 +32,7 @@
       "id": "Q03",
       "category": "holiday_entitlement_and_pay",
       "kind": "supported",
-      "question": "Do bank holidays have to be extra days on top of my annual leave, and how should I check that my holiday pay is right?",
+      "question": "Does the 5.6 weeks holiday entitlement include bank holidays, and how is weekly pay calculated for different working patterns?",
       "expected_source_ids": ["holiday-entitlement-rights"],
       "expected_chunk_ids": ["holiday-entitlement-rights-0001", "holiday-entitlement-rights-0009"],
       "expected_facts": [
@@ -147,7 +145,7 @@
       "id": "Q12",
       "category": "employment_status",
       "kind": "supported",
-      "question": "What kinds of things does GOV.UK say may indicate that someone is an employee?",
+      "question": "I work regular hours and my manager controls my workload and how my tasks are done. What does GOV.UK say about employee status?",
       "expected_source_ids": ["employment-status"],
       "expected_chunk_ids": ["employment-status-0007"],
       "expected_facts": [

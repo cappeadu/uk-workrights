@@ -80,7 +80,7 @@ def test_retrieve_top_five_returns_ranked_source_linked_chunks():
     )
 
 
-def test_evaluation_scores_chunk_and_source_coverage():
+def test_evaluation_scores_chunk_and_source_coverage(tmp_path):
     client = make_client()
     questions = [
         {
@@ -109,6 +109,13 @@ def test_evaluation_scores_chunk_and_source_coverage():
     assert report["results"][0]["chunk_recall_at_5"] == 0.5
     assert report["results"][1]["source_recall_at_5"] is None
 
+    report_path = tmp_path / "review" / "retrieval_report.md"
+    evaluate_retrieval.write_markdown_report(report, report_path)
+    markdown = report_path.read_text(encoding="utf-8")
+    assert "**Macro chunk Recall@5:** 50.0% — BELOW TARGET" in markdown
+    assert "missing-chunk" in markdown
+    assert "[guide-a guide](https://www.gov.uk/guide-a)" in markdown
+
 
 def test_load_questions_rejects_duplicate_ids(tmp_path):
     path = tmp_path / "questions.json"
@@ -134,6 +141,7 @@ def test_cli_evaluates_using_persistent_qdrant_and_fake_model(
     make_client(collection_name, storage_path).close()
 
     questions_path = tmp_path / "questions.json"
+    report_path = tmp_path / "review" / "retrieval_report.md"
     questions_path.write_text(
         json.dumps(
             {
@@ -161,6 +169,8 @@ def test_cli_evaluates_using_persistent_qdrant_and_fake_model(
             str(storage_path),
             "--collection",
             collection_name,
+            "--report",
+            str(report_path),
         ],
     )
 
@@ -168,3 +178,5 @@ def test_cli_evaluates_using_persistent_qdrant_and_fake_model(
     output = capsys.readouterr().out
     assert "Macro Chunk Recall@5: 1.000" in output
     assert "Macro Source Recall@5: 1.000" in output
+    assert f"Markdown report written to: {report_path}" in output
+    assert "Macro chunk Recall@5" in report_path.read_text(encoding="utf-8")
