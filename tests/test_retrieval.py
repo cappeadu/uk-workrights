@@ -80,18 +80,20 @@ def test_retrieve_top_five_returns_ranked_source_linked_chunks():
     )
 
 
-def test_evaluation_scores_source_coverage_and_skips_unlabeled_questions():
+def test_evaluation_scores_chunk_and_source_coverage():
     client = make_client()
     questions = [
         {
             "id": "Q1",
             "question": "Find both sources.",
             "expected_source_ids": ["guide-a", "missing-guide"],
+            "expected_chunk_ids": ["guide-a-0001", "missing-chunk"],
         },
         {
             "id": "Q2",
             "question": "No source label.",
             "expected_source_ids": [],
+            "expected_chunk_ids": [],
         },
     ]
     try:
@@ -100,9 +102,11 @@ def test_evaluation_scores_source_coverage_and_skips_unlabeled_questions():
         client.close()
 
     assert report["top_k"] == 5
+    assert report["chunk_recall_at_5"] == 0.5
     assert report["source_recall_at_5"] == 0.5
     assert report["scored_questions"] == 1
     assert report["unscored_questions"] == 1
+    assert report["results"][0]["chunk_recall_at_5"] == 0.5
     assert report["results"][1]["source_recall_at_5"] is None
 
 
@@ -112,6 +116,7 @@ def test_load_questions_rejects_duplicate_ids(tmp_path):
         "id": "Q1",
         "question": "Question text",
         "expected_source_ids": [],
+        "expected_chunk_ids": [],
     }
     path.write_text(
         json.dumps({"questions": [question, question]}), encoding="utf-8"
@@ -137,6 +142,7 @@ def test_cli_evaluates_using_persistent_qdrant_and_fake_model(
                         "id": "Q1",
                         "question": "Find the closest evidence.",
                         "expected_source_ids": ["guide-a"],
+                        "expected_chunk_ids": ["guide-a-0001"],
                     }
                 ]
             }
@@ -159,4 +165,6 @@ def test_cli_evaluates_using_persistent_qdrant_and_fake_model(
     )
 
     assert evaluate_retrieval.main() == 0
-    assert "Macro Source Recall@5: 1.000" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "Macro Chunk Recall@5: 1.000" in output
+    assert "Macro Source Recall@5: 1.000" in output

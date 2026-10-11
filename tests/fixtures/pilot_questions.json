@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "Phase 1 pilot questions. Expected facts are annotation targets, not answer templates.",
+  "version": 2,
+  "description": "Phase 3 retrieval questions. Expected chunks and facts are annotation targets, not answer templates.",
   "questions": [
     {
       "id": "Q01",
@@ -8,6 +8,7 @@
       "kind": "supported",
       "question": "My contract calls me self-employed, but I have to do the work myself and my manager sets when and how I do it. What should I look at to understand my employment status?",
       "expected_source_ids": ["employment-status"],
+      "expected_chunk_ids": ["employment-status-0001", "employment-status-0002", "employment-status-0007"],
       "expected_facts": [
         "Employment law recognises worker, employee, and self-employed status categories.",
         "Relevant worker indicators can include personal service, a limited right to send a substitute, and supervision or control; these indicators do not decide an individual case on their own.",
@@ -22,6 +23,7 @@
       "kind": "supported",
       "question": "Does my employment contract have to be written down, and when can it start?",
       "expected_source_ids": ["employment-contracts-and-conditions"],
+      "expected_chunk_ids": ["employment-contracts-and-conditions-0001", "employment-contracts-and-conditions-0004"],
       "expected_facts": [
         "An employment contract does not have to be written down.",
         "A contract can exist as soon as a person accepts a job offer.",
@@ -34,6 +36,7 @@
       "kind": "supported",
       "question": "Do bank holidays have to be extra days on top of my annual leave, and how should I check that my holiday pay is right?",
       "expected_source_ids": ["holiday-entitlement-rights"],
+      "expected_chunk_ids": ["holiday-entitlement-rights-0001", "holiday-entitlement-rights-0009"],
       "expected_facts": [
         "Almost all workers are entitled to 5.6 weeks of paid annual leave, subject to the guide's stated rules and limits.",
         "An employer can include bank holidays within statutory annual leave; they do not have to be extra paid leave.",
@@ -47,6 +50,7 @@
       "kind": "supported",
       "question": "I am an employee and have been off sick for four days. Do I need a fit note, and does being off sick automatically mean I get Statutory Sick Pay?",
       "expected_source_ids": ["taking-sick-leave", "statutory-sick-pay"],
+      "expected_chunk_ids": ["taking-sick-leave-0004", "statutory-sick-pay-0003"],
       "expected_facts": [
         "Employees off work sick for 7 days or less do not need a fit note or other healthcare-professional proof; the employer can ask for self-certification.",
         "Being off sick does not by itself establish SSP eligibility; the separate SSP guidance sets eligibility conditions.",
@@ -60,6 +64,7 @@
       "kind": "supported",
       "question": "Can my employer make me work more than 48 hours a week, and what does opting out mean?",
       "expected_source_ids": ["maximum-weekly-working-hours"],
+      "expected_chunk_ids": ["maximum-weekly-working-hours-0001", "maximum-weekly-working-hours-0005"],
       "expected_facts": [
         "The guide describes a 48-hour average weekly limit for most workers, with exceptions and a reference period.",
         "A worker can agree to opt out of the limit, and the decision must be voluntary."
@@ -72,6 +77,7 @@
       "kind": "supported",
       "question": "My employer says my role is redundant. What should I expect about fair selection and consultation?",
       "expected_source_ids": ["redundancy-your-rights"],
+      "expected_chunk_ids": ["redundancy-your-rights-0002", "redundancy-your-rights-0003", "redundancy-your-rights-0011"],
       "expected_facts": [
         "Selection should use a fair and objective method, and protected or otherwise prohibited reasons cannot be used to select someone.",
         "The guide explains consultation rights and related redundancy processes; requirements can depend on the circumstances and number of affected employees."
@@ -82,13 +88,14 @@
       "id": "Q07",
       "category": "dismissal",
       "kind": "ambiguous",
-      "question": "I was dismissed shortly after raising a safety concern at work. Was that automatically unfair?",
+      "question": "I was dismissed after reporting wrongdoing at work. What does the GOV.UK guide say about whistleblowing and unfair dismissal?",
       "expected_source_ids": ["dismissal"],
+      "expected_chunk_ids": ["dismissal-0005"],
       "expected_facts": [
-        "Some reasons connected with health and safety can make a dismissal automatically unfair.",
-        "Whether the protection applies depends on the facts, the worker's status, and the reason for dismissal; the source cannot determine the user's case."
+        "The guide lists exposing wrongdoing in the workplace (whistleblowing) among situations when dismissal is likely to be unfair.",
+        "The guide cannot determine whether this user's report qualifies as whistleblowing or whether their dismissal was unfair."
       ],
-      "answer_note": "Give general guidance, identify missing facts, and do not conclude that this dismissal was automatically unfair."
+      "answer_note": "Give general guidance, identify missing facts, and do not conclude that this dismissal was unfair."
     },
     {
       "id": "Q08",
@@ -96,6 +103,7 @@
       "kind": "supported",
       "question": "Do I need a minimum length of service to take Statutory Maternity Leave, and is Statutory Maternity Pay based on the same eligibility rules?",
       "expected_source_ids": ["maternity-pay-leave"],
+      "expected_chunk_ids": ["maternity-pay-leave-0004"],
       "expected_facts": [
         "Statutory Maternity Leave eligibility applies to employees who give the correct notice and does not depend on length of service, hours, or pay.",
         "Statutory Maternity Pay has separate eligibility requirements, including a qualifying period and earnings conditions."
@@ -108,6 +116,7 @@
       "kind": "unsupported",
       "question": "How much must my employer contribute to my workplace pension each month?",
       "expected_source_ids": [],
+      "expected_chunk_ids": [],
       "expected_facts": [],
       "answer_note": "Pensions are outside the MVP source scope; return a clear insufficient-evidence response rather than guessing."
     },
@@ -117,8 +126,193 @@
       "kind": "out_of_scope",
       "question": "Can you help me write a CV for a job?",
       "expected_source_ids": [],
+      "expected_chunk_ids": [],
       "expected_facts": [],
       "answer_note": "Job-search advice is outside the v1 employment-guidance topics. Return a clear out-of-scope response."
+    },
+    {
+      "id": "Q11",
+      "category": "employment_status",
+      "kind": "supported",
+      "question": "My work is described as casual or zero-hours. What factors does GOV.UK list for this kind of working arrangement?",
+      "expected_source_ids": ["employment-status"],
+      "expected_chunk_ids": ["employment-status-0004"],
+      "expected_facts": [
+        "The guidance lists features such as work being offered only when available, the person being free to accept it, and the terms used in the contract.",
+        "It also lists factors such as supervision or control and whether the person can send someone else to do the work."
+      ],
+      "answer_note": "List the guide's factors without treating the casual or zero-hours label as a decision about the person's status."
+    },
+    {
+      "id": "Q12",
+      "category": "employment_status",
+      "kind": "supported",
+      "question": "What kinds of things does GOV.UK say may indicate that someone is an employee?",
+      "expected_source_ids": ["employment-status"],
+      "expected_chunk_ids": ["employment-status-0007"],
+      "expected_facts": [
+        "The guide lists indicators including regular work, minimum hours, a manager controlling workload or methods, and no right to send a substitute.",
+        "The indicators should be considered together rather than used as a definitive decision on an individual case."
+      ],
+      "answer_note": "Describe the guide's indicators as factors, not a final classification."
+    },
+    {
+      "id": "Q13",
+      "category": "contracts",
+      "kind": "supported",
+      "question": "What information about pay, hours and holidays should be in the principal statement of employment particulars?",
+      "expected_source_ids": ["employment-contracts-and-conditions"],
+      "expected_chunk_ids": ["employment-contracts-and-conditions-0005"],
+      "expected_facts": [
+        "The principal statement includes how much and how often the person is paid.",
+        "It includes working hours and days, how they may vary, and holiday entitlement including whether public holidays are included."
+      ]
+    },
+    {
+      "id": "Q14",
+      "category": "contracts",
+      "kind": "supported",
+      "question": "When should I receive my written statement of employment particulars, and is it the same thing as my contract?",
+      "expected_source_ids": ["employment-contracts-and-conditions"],
+      "expected_chunk_ids": ["employment-contracts-and-conditions-0004", "employment-contracts-and-conditions-0006"],
+      "expected_facts": [
+        "The written statement is not itself an employment contract.",
+        "The principal statement must be provided on the first day; the wider statement is due within 2 months."
+      ]
+    },
+    {
+      "id": "Q15",
+      "category": "holiday_entitlement_and_pay",
+      "kind": "supported",
+      "question": "I work three regular days a week all year. What is the example minimum annual leave entitlement in the GOV.UK guide?",
+      "expected_source_ids": ["holiday-entitlement-rights"],
+      "expected_chunk_ids": ["holiday-entitlement-rights-0001"],
+      "expected_facts": [
+        "A regular part-time worker who works three days a week for the whole year is given as an example of at least 16.8 days of paid annual leave."
+      ],
+      "answer_note": "Explain that this is the guide's example and do not assume additional contract terms."
+    },
+    {
+      "id": "Q16",
+      "category": "holiday_entitlement_and_pay",
+      "kind": "supported",
+      "question": "If I am off sick and cannot use my statutory holiday, what does the guidance say about building up and carrying it over?",
+      "expected_source_ids": ["holiday-entitlement-rights", "taking-sick-leave"],
+      "expected_chunk_ids": ["holiday-entitlement-rights-0008", "taking-sick-leave-0005"],
+      "expected_facts": [
+        "Statutory holiday entitlement continues to build up while an employee is off sick.",
+        "Unused statutory holiday can be carried over when illness prevented the employee from taking it."
+      ]
+    },
+    {
+      "id": "Q17",
+      "category": "holiday_entitlement_and_pay",
+      "kind": "supported",
+      "question": "Can regular overtime and commission be included when working out normal holiday pay?",
+      "expected_source_ids": ["holiday-entitlement-rights"],
+      "expected_chunk_ids": ["holiday-entitlement-rights-0011"],
+      "expected_facts": [
+        "The guide says normal pay includes commission and regular overtime payments, among other listed payments."
+      ],
+      "answer_note": "Do not calculate the worker's individual holiday pay without their pay details."
+    },
+    {
+      "id": "Q18",
+      "category": "sick_leave_and_statutory_sick_pay",
+      "kind": "supported",
+      "question": "If I am off sick for more than seven days in a row, do weekends count when working out whether I need a fit note?",
+      "expected_source_ids": ["taking-sick-leave"],
+      "expected_chunk_ids": ["taking-sick-leave-0002"],
+      "expected_facts": [
+        "The seven days are consecutive and include non-working days such as weekends and bank holidays."
+      ]
+    },
+    {
+      "id": "Q19",
+      "category": "sick_leave_and_statutory_sick_pay",
+      "kind": "supported",
+      "question": "What basic conditions does the GOV.UK guide list for qualifying for Statutory Sick Pay?",
+      "expected_source_ids": ["statutory-sick-pay"],
+      "expected_chunk_ids": ["statutory-sick-pay-0003"],
+      "expected_facts": [
+        "The guide lists being classed as an employee, having done some work for the employer, and being ill for at least one full working day.",
+        "The guide also lists exceptions, so the factors do not by themselves establish an individual's eligibility."
+      ],
+      "answer_note": "Summarise the listed conditions and exceptions without deciding eligibility for the user."
+    },
+    {
+      "id": "Q20",
+      "category": "working_hours",
+      "kind": "supported",
+      "question": "How does the GOV.UK guide describe the period used to average weekly working hours?",
+      "expected_source_ids": ["maximum-weekly-working-hours"],
+      "expected_chunk_ids": ["maximum-weekly-working-hours-0002"],
+      "expected_facts": [
+        "The normal reference period is 17 weeks.",
+        "The guide says the period can be extended up to 52 weeks if agreed, for example by a trade union."
+      ]
+    },
+    {
+      "id": "Q21",
+      "category": "redundancy",
+      "kind": "supported",
+      "question": "What service requirement does the guide usually give for statutory redundancy pay, and what affects its calculation?",
+      "expected_source_ids": ["redundancy-your-rights"],
+      "expected_chunk_ids": ["redundancy-your-rights-0005"],
+      "expected_facts": [
+        "An employee is normally entitled to statutory redundancy pay after at least 2 years with their current employer.",
+        "The calculation depends on age, full years of service, and weekly pay, and service is capped at 20 years."
+      ],
+      "answer_note": "Avoid calculating an individual amount or relying on changeable monetary caps."
+    },
+    {
+      "id": "Q22",
+      "category": "redundancy",
+      "kind": "supported",
+      "question": "What is redundancy consultation about, and when do the collective consultation rules apply?",
+      "expected_source_ids": ["redundancy-your-rights"],
+      "expected_chunk_ids": ["redundancy-your-rights-0011", "redundancy-your-rights-0012"],
+      "expected_facts": [
+        "Consultation should discuss why redundancies are proposed and possible alternatives.",
+        "Collective redundancy rules apply when 20 or more employees are being made redundant at the same time."
+      ]
+    },
+    {
+      "id": "Q23",
+      "category": "dismissal",
+      "kind": "supported",
+      "question": "What does the GOV.UK guide say an employer must show when dismissing someone?",
+      "expected_source_ids": ["dismissal"],
+      "expected_chunk_ids": ["dismissal-0001"],
+      "expected_facts": [
+        "The employer must show a valid reason they can justify and that they acted reasonably in the circumstances.",
+        "The guide also says the employer should be consistent and fully investigate the situation."
+      ],
+      "answer_note": "Describe the general guidance without ruling on whether a particular dismissal was fair."
+    },
+    {
+      "id": "Q24",
+      "category": "maternity_leave_and_pay",
+      "kind": "supported",
+      "question": "How long is Statutory Maternity Leave, and what is the minimum leave after the baby is born?",
+      "expected_source_ids": ["maternity-pay-leave"],
+      "expected_chunk_ids": ["maternity-pay-leave-0002"],
+      "expected_facts": [
+        "Statutory Maternity Leave is 52 weeks, made up of 26 weeks of Ordinary Maternity Leave and 26 weeks of Additional Maternity Leave.",
+        "At least 2 weeks must be taken after birth, or 4 weeks for someone working in a factory."
+      ]
+    },
+    {
+      "id": "Q25",
+      "category": "maternity_leave_and_pay",
+      "kind": "supported",
+      "question": "For how many weeks can Statutory Maternity Pay be paid?",
+      "expected_source_ids": ["maternity-pay-leave"],
+      "expected_chunk_ids": ["maternity-pay-leave-0003"],
+      "expected_facts": [
+        "Statutory Maternity Pay can be paid for up to 39 weeks."
+      ],
+      "answer_note": "Answer the duration question without quoting changeable rates."
     }
   ]
 }

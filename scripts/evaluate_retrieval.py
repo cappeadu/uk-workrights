@@ -1,4 +1,4 @@
-"""Retrieve the five closest chunks and evaluate them against pilot source labels."""
+"""Retrieve the five closest chunks and evaluate them against labeled evidence."""
 
 from __future__ import annotations
 
@@ -43,6 +43,7 @@ def load_questions(path: Path) -> list[dict[str, object]]:
         question_id = question.get("id")
         text = question.get("question")
         expected_source_ids = question.get("expected_source_ids")
+        expected_chunk_ids = question.get("expected_chunk_ids")
         if not isinstance(question_id, str) or not question_id:
             raise ValueError("Every question must have a non-empty id")
         if question_id in seen_ids:
@@ -53,6 +54,10 @@ def load_questions(path: Path) -> list[dict[str, object]]:
             isinstance(source_id, str) for source_id in expected_source_ids
         ):
             raise ValueError(f"Question {question_id} has invalid expected_source_ids")
+        if not isinstance(expected_chunk_ids, list) or not all(
+            isinstance(chunk_id, str) for chunk_id in expected_chunk_ids
+        ):
+            raise ValueError(f"Question {question_id} has invalid expected_chunk_ids")
         seen_ids.add(question_id)
     return questions
 
@@ -121,39 +126,54 @@ def evaluate_questions(
     model,
     collection_name: str = DEFAULT_COLLECTION,
 ) -> dict[str, object]:
-    """Evaluate top-five source coverage for questions with source labels."""
+    """Evaluate top-five chunk and source coverage for labeled questions."""
     results: list[dict[str, object]] = []
-    scored_recalls: list[float] = []
+    chunk_recalls: list[float] = []
+    source_recalls: list[float] = []
 
     for question in questions:
         question_id = str(question["id"])
         text = str(question["question"])
         expected_sources = question["expected_source_ids"]
+        expected_chunks = question["expected_chunk_ids"]
         retrieved = retrieve_top_five(text, client, model, collection_name)
 
-        recall: float | None = None
+        chunk_recall: float | None = None
+        if expected_chunks:
+            found_chunks = {str(item["chunk_id"]) for item in retrieved}
+            expected_chunk_set = set(expected_chunks)
+            chunk_recall = len(expected_chunk_set & found_chunks) / len(expected_chunk_set)
+            chunk_recalls.append(chunk_recall)
+
+        source_recall: float | None = None
         if expected_sources:
             found_sources = {str(item["source_id"]) for item in retrieved}
-            recall = len(set(expected_sources) & found_sources) / len(set(expected_sources))
-            scored_recalls.append(recall)
+            expected_source_set = set(expected_sources)
+            source_recall = len(expected_source_set & found_sources) / len(expected_source_set)
+            source_recalls.append(source_recall)
 
         results.append(
             {
                 "id": question_id,
                 "question": text,
                 "expected_source_ids": expected_sources,
-                "source_recall_at_5": recall,
+                "expected_chunk_ids": expected_chunks,
+                "chunk_recall_at_5": chunk_recall,
+                "source_recall_at_5": source_recall,
                 "retrieved": retrieved,
             }
         )
 
     return {
         "top_k": TOP_K,
-        "source_recall_at_5": (
-            sum(scored_recalls) / len(scored_recalls) if scored_recalls else None
+        "chunk_recall_at_5": (
+            sum(chunk_recalls) / len(chunk_recalls) if chunk_recalls else None
         ),
-        "scored_questions": len(scored_recalls),
-        "unscored_questions": len(questions) - len(scored_recalls),
+        "source_recall_at_5": (
+            sum(source_recalls) / len(source_recalls) if source_recalls else None
+        ),
+        "scored_questions": len(chunk_recalls),
+        "unscored_questions": len(questions) - len(chunk_recalls),
         "results": results,
     }
 
@@ -161,12 +181,17 @@ def evaluate_questions(
 def print_report(report: dict[str, object]) -> None:
     for result in report["results"]:
         print(f"\n{result['id']}: {result['question']}")
-        recall = result["source_recall_at_5"]
-        if recall is None:
-            print("  Source Recall@5: not scored (no expected source IDs)")
+        chunk_recall = result["chunk_recall_at_5"]
+        if chunk_recall is None:
+            print("  Chunk Recall@5: not scored (no expected supporting chunks)")
         else:
-            expected = ", ".join(result["expected_source_ids"])
-            print(f"  Source Recall@5: {recall:.2f}; expected: {expected}")
+            expected_chunks = ", ".join(result["expected_chunk_ids"])
+            print(f"  Chunk Recall@5: {chunk_recall:.2f}; expected: {expected_chunks}")
+
+        source_recall = result["source_recall_at_5"]
+        if source_recall is not None:
+            expected_sources = ", ".join(result["expected_source_ids"])
+            print(f"  Source Recall@5: {source_recall:.2f}; expected: {expected_sources}")
 
         for rank, item in enumerate(result["retrieved"], start=1):
             excerpt = " ".join(item["text"].split())[:180]
@@ -178,19 +203,19 @@ def print_report(report: dict[str, object]) -> None:
             )
             print(f"     {item['canonical_url']}\n     {excerpt}")
 
-    score = report["source_recall_at_5"]
+    score = report["chunk_recall_at_5"]
     if score is None:
-        print("\nSource Recall@5: not available; no questions have source labels.")
+        print("\nChunk Recall@5: not available; no questions have chunk labels.")
     else:
         print(
-            f"\nMacro Source Recall@5: {score:.3f} "
+            f"\nMacro Chunk Recall@5: {score:.3f} "
             f"({report['scored_questions']} scored, "
             f"{report['unscored_questions']} unscored)"
         )
-        print(
-            "This is a source-level proxy: the current pilot labels source IDs. "
-            "Chunk-level Recall@5 needs expected chunk IDs."
-        )
+
+    source_score = report["source_recall_at_5"]
+    if source_score is not None:
+        print(f"Macro Source Recall@5: {source_score:.3f} (secondary diagnostic)")
 
 
 def main() -> int:
