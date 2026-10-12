@@ -3,6 +3,7 @@ name = "workrights-assistant"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
+    "anthropic>=1.13.0",
     "fastapi>=0.143.0",
     "qdrant-client>=1.19.1",
     "sentence-transformers>=6.1.0",
