@@ -32,6 +32,7 @@ def mock_retrieval(monkeypatch):
                 "score": 0.5,
                 "source_id": "holiday-entitlement",
                 "title": "Holiday entitlement",
+                "canonical_url": "https://www.gov.uk/holiday-entitlement-rights",
                 "text": "Most workers are entitled to paid annual leave.",
             }
         ]
@@ -78,7 +79,14 @@ def test_valid_question_with_evidence_calls_claude(mock_retrieval, mock_claude):
     assert response.json() == {
         "status": "answer",
         "answer": "The evidence says workers are entitled to paid annual leave.",
-        "source_ids": ["holiday-entitlement"],
+        "citations": [
+            {
+                "source_id": "holiday-entitlement",
+                "title": "Holiday entitlement",
+                "excerpt": "Most workers are entitled to paid annual leave.",
+                "url": "https://www.gov.uk/holiday-entitlement-rights",
+            }
+        ],
     }
 
     calls, _ = mock_claude
@@ -202,8 +210,106 @@ def test_claude_can_abstain_when_retrieved_evidence_does_not_answer_question(
     assert response.json() == {
         "status": "insufficient_evidence",
         "answer": "The retrieved passage does not answer this question.",
-        "source_ids": [],
+        "citations": [],
     }
+
+
+def test_insufficient_evidence_can_cite_related_passages(mock_retrieval, mock_claude):
+    _, response_body = mock_claude
+    response_body.update(
+        {
+            "status": "insufficient_evidence",
+            "answer": "The retrieved passage mentions paid annual leave.",
+            "source_ids": ["holiday-entitlement"],
+        }
+    )
+
+    response = client.post("/ask", json={"question": "Can I join a union?"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "insufficient_evidence",
+        "answer": "The retrieved passage mentions paid annual leave.",
+        "citations": [
+            {
+                "source_id": "holiday-entitlement",
+                "title": "Holiday entitlement",
+                "excerpt": "Most workers are entitled to paid annual leave.",
+                "url": "https://www.gov.uk/holiday-entitlement-rights",
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    "source_ids",
+    [
+        ["not-retrieved"],
+        ["holiday-entitlement", "not-retrieved"],
+    ],
+    ids=["unknown-id", "mix-of-valid-and-unknown-ids"],
+)
+def test_unknown_source_id_replaces_answer_with_abstention(
+    source_ids, mock_retrieval, mock_claude
+):
+    _, response_body = mock_claude
+    response_body["answer"] = "This generated claim must not be returned."
+    response_body["source_ids"] = source_ids
+
+    response = client.post("/ask", json={"question": "How much holiday do I get?"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "insufficient_evidence",
+        "answer": api.UNVERIFIED_CITATION_ANSWER,
+        "citations": [],
+    }
+
+
+def test_answer_without_source_ids_becomes_abstention(mock_retrieval, mock_claude):
+    _, response_body = mock_claude
+    response_body["source_ids"] = []
+
+    response = client.post("/ask", json={"question": "How much holiday do I get?"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "insufficient_evidence",
+        "answer": api.UNVERIFIED_CITATION_ANSWER,
+        "citations": [],
+    }
+
+
+def test_duplicate_source_ids_use_one_highest_ranked_excerpt(
+    mock_retrieval, mock_claude
+):
+    mock_retrieval(
+        [
+            {
+                "score": 0.9,
+                "source_id": "holiday-entitlement",
+                "title": "Holiday entitlement",
+                "canonical_url": "https://www.gov.uk/holiday-entitlement-rights",
+                "text": "The highest-ranked passage.",
+            },
+            {
+                "score": 0.8,
+                "source_id": "holiday-entitlement",
+                "title": "Holiday entitlement",
+                "canonical_url": "https://www.gov.uk/holiday-entitlement-rights",
+                "text": "A lower-ranked passage.",
+            },
+        ]
+    )
+    _, response_body = mock_claude
+    response_body["source_ids"] = ["holiday-entitlement", "holiday-entitlement"]
+
+    response = client.post("/ask", json={"question": "How much holiday do I get?"})
+
+    assert response.status_code == 200
+    citations = response.json()["citations"]
+    assert len(citations) == 1
+    assert citations[0]["excerpt"] == "The highest-ranked passage."
 
 
 def test_evidence_threshold_can_be_changed_with_environment_variable(

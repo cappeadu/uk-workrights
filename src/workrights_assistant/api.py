@@ -40,6 +40,10 @@ CLAUDE_RESPONSE_SCHEMA = {
     "required": ["status", "answer", "source_ids"],
     "additionalProperties": False,
 }
+UNVERIFIED_CITATION_ANSWER = (
+    "I could not verify the source references needed to support this response, "
+    "so I cannot provide a supported answer."
+)
 
 OUT_OF_SCOPE_TERMS = (
     "pension",
@@ -184,6 +188,46 @@ def format_evidence(retrieved_chunks: list[dict[str, object]]) -> str:
     return "\n\n---\n\n".join(passages)
 
 
+def build_citations(
+    source_ids: list[str], retrieved_chunks: list[dict[str, object]]
+) -> list[dict[str, str]] | None:
+    """Render unique source IDs from the highest-ranked matching chunks."""
+    chunks_by_source: dict[str, dict[str, object]] = {}
+    for chunk in retrieved_chunks:
+        source_id = chunk.get("source_id")
+        if isinstance(source_id, str):
+            # Retrieval results are score-ranked, so the first chunk is the best excerpt.
+            chunks_by_source.setdefault(source_id, chunk)
+
+    citations = []
+    seen_source_ids = set()
+    for source_id in source_ids:
+        if source_id in seen_source_ids:
+            continue
+        seen_source_ids.add(source_id)
+
+        chunk = chunks_by_source.get(source_id)
+        if chunk is None:
+            return None
+
+        title = chunk.get("title")
+        excerpt = chunk.get("text")
+        url = chunk.get("canonical_url")
+        if not all(isinstance(value, str) and value for value in (title, excerpt, url)):
+            return None
+
+        citations.append(
+            {
+                "source_id": source_id,
+                "title": title,
+                "excerpt": excerpt,
+                "url": url,
+            }
+        )
+
+    return citations
+
+
 def generate_grounded_answer(
     question: str, retrieved_chunks: list[dict[str, object]]
 ) -> dict[str, object]:
@@ -198,7 +242,9 @@ def generate_grounded_answer(
         "insufficient_evidence status and say that clearly. Return only a JSON "
         "object with these fields: status (answer or insufficient_evidence), "
         "answer (a concise plain-language response), and source_ids (the exact "
-        "source IDs used; use an empty list when evidence is insufficient)."
+        "source IDs for passages you refer to in the answer; include these IDs "
+        "for related facts mentioned in an insufficient_evidence explanation, "
+        "and use an empty list only when no passage is referred to)."
     )
     user_message = (
         "Evidence passages:\n\n"
@@ -256,7 +302,6 @@ def generate_grounded_answer(
         or not isinstance(answer, str)
         or not answer.strip()
         or not valid_source_ids
-        or (status == "answer" and not source_ids)
     ):
         raise HTTPException(
             status_code=502,
@@ -266,7 +311,7 @@ def generate_grounded_answer(
     return {
         "status": status,
         "answer": answer.strip(),
-        "source_ids": source_ids if status == "answer" else [],
+        "source_ids": source_ids,
     }
 
 
@@ -306,4 +351,21 @@ def ask(request: AskRequest) -> dict[str, object]:
             "citations": [],
         }
 
-    return generate_grounded_answer(request.question, retrieved_chunks)
+    generated_answer = generate_grounded_answer(request.question, retrieved_chunks)
+    source_ids = generated_answer["source_ids"]
+    citations = build_citations(source_ids, retrieved_chunks)
+
+    if citations is None or (
+        generated_answer["status"] == "answer" and not citations
+    ):
+        return {
+            "status": "insufficient_evidence",
+            "answer": UNVERIFIED_CITATION_ANSWER,
+            "citations": [],
+        }
+
+    return {
+        "status": generated_answer["status"],
+        "answer": generated_answer["answer"],
+        "citations": citations,
+    }
