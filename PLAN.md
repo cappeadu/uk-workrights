@@ -103,3 +103,5 @@ Claude should only be called for in-scope questions with supporting evidence. It
 ## Later versions
 
 Later versions can expand the curated GOV.UK source collection to cover topics beyond employment guidance, based on user needs and evaluation results.
+
+Later versions may add a topic classifier to identify and filter out-of-scope questions before retrieval.

@@ -4,27 +4,25 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sys
 from pathlib import Path
 
 from qdrant_client import QdrantClient
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_STORAGE = PROJECT_ROOT / "qdrant_storage"
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from workrights_assistant.retrieval import (
+    DEFAULT_COLLECTION,
+    DEFAULT_STORAGE,
+    TOP_K,
+    load_embedding_model,
+    retrieve_top_five,
+)
+
 DEFAULT_QUESTIONS = PROJECT_ROOT / "tests" / "fixtures" / "pilot_questions.json"
 DEFAULT_REPORT = PROJECT_ROOT / "data" / "processed" / "retrieval_report.md"
-DEFAULT_COLLECTION = "employment_guidance_chunks"
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-TOP_K = 5
 RECALL_TARGET = 0.90
-
-
-def load_embedding_model():
-    """Load the fixed embedding model on CPU for question vectors."""
-    from sentence_transformers import SentenceTransformer
-
-    return SentenceTransformer(MODEL_NAME, device="cpu")
 
 
 def load_questions(path: Path) -> list[dict[str, object]]:
@@ -62,64 +60,6 @@ def load_questions(path: Path) -> list[dict[str, object]]:
             raise ValueError(f"Question {question_id} has invalid expected_chunk_ids")
         seen_ids.add(question_id)
     return questions
-
-
-def embed_question(question: str, model) -> list[float]:
-    vectors = model.encode([question], show_progress_bar=False)
-    if len(vectors) != 1:
-        raise ValueError("The model did not return exactly one query vector")
-    try:
-        vector = [float(value) for value in vectors[0]]
-    except (TypeError, ValueError, OverflowError) as error:
-        raise ValueError("The model returned an invalid query vector") from error
-    if not vector or not all(math.isfinite(value) for value in vector):
-        raise ValueError("The model returned an empty or non-finite query vector")
-    return vector
-
-
-def retrieve_top_five(
-    question: str,
-    client: QdrantClient,
-    model,
-    collection_name: str = DEFAULT_COLLECTION,
-) -> list[dict[str, object]]:
-    """Return the five highest-scoring source-linked chunks for a question."""
-    response = client.query_points(
-        collection_name=collection_name,
-        query=embed_question(question, model),
-        limit=TOP_K,
-        with_payload=True,
-    )
-
-    results: list[dict[str, object]] = []
-    for point in response.points:
-        payload = point.payload
-        if not isinstance(payload, dict):
-            raise TypeError("A retrieved Qdrant point has no payload")
-        source = payload.get("source")
-        if not isinstance(source, dict):
-            raise TypeError("A retrieved chunk has no source metadata")
-        required_values = (
-            payload.get("chunk_id"),
-            payload.get("source_id"),
-            payload.get("text"),
-            source.get("title"),
-            source.get("canonical_url"),
-        )
-        if not all(isinstance(value, str) and value for value in required_values):
-            raise ValueError("A retrieved chunk is missing citation metadata")
-
-        results.append(
-            {
-                "chunk_id": payload["chunk_id"],
-                "source_id": payload["source_id"],
-                "title": source["title"],
-                "canonical_url": source["canonical_url"],
-                "text": payload["text"],
-                "score": float(point.score),
-            }
-        )
-    return results
 
 
 def evaluate_questions(
