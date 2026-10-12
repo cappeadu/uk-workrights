@@ -44,7 +44,7 @@ def mock_claude(monkeypatch):
     """Return a fake Claude client and keep a record of requests made to it."""
     calls = []
     response_body = {
-        "status": "answer",
+        "status": "Answer",
         "answer": "The evidence says workers are entitled to paid annual leave.",
         "source_ids": ["holiday-entitlement"],
     }
@@ -85,8 +85,14 @@ def test_valid_question_with_evidence_calls_claude(mock_retrieval, mock_claude):
     assert len(calls) == 1
     assert calls[0]["model"] == "test-model"
     assert "How much holiday do I get?" in calls[0]["messages"][0]["content"]
-    assert "Most workers are entitled to paid annual leave." in calls[0]["messages"][0]["content"]
+    assert (
+        "Most workers are entitled to paid annual leave."
+        in calls[0]["messages"][0]["content"]
+    )
     assert "only the evidence supplied" in calls[0]["system"]
+    assert calls[0]["output_config"]["format"]["schema"] == (
+        api.CLAUDE_RESPONSE_SCHEMA
+    )
 
 
 @pytest.mark.parametrize(

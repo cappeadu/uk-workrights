@@ -27,6 +27,19 @@ EVIDENCE_SCORE_THRESHOLD_ENV = "EVIDENCE_SCORE_THRESHOLD"
 ANTHROPIC_API_KEY_ENV = "ANTHROPIC_API_KEY"
 ANTHROPIC_MODEL_ENV = "ANTHROPIC_MODEL"
 CLAUDE_MAX_TOKENS = 800
+CLAUDE_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "status": {
+            "type": "string",
+            "enum": ["answer", "insufficient_evidence"],
+        },
+        "answer": {"type": "string"},
+        "source_ids": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["status", "answer", "source_ids"],
+    "additionalProperties": False,
+}
 
 OUT_OF_SCOPE_TERMS = (
     "pension",
@@ -199,6 +212,12 @@ def generate_grounded_answer(
             max_tokens=CLAUDE_MAX_TOKENS,
             system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
+            output_config={
+                "format": {
+                    "type": "json_schema",
+                    "schema": CLAUDE_RESPONSE_SCHEMA,
+                }
+            },
         )
     except APIError as error:
         raise HTTPException(
@@ -224,6 +243,8 @@ def generate_grounded_answer(
         )
 
     status = result.get("status")
+    if isinstance(status, str):
+        status = status.strip().casefold()
     answer = result.get("answer")
     source_ids = result.get("source_ids")
     valid_source_ids = isinstance(source_ids, list) and all(
