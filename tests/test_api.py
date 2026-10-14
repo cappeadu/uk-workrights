@@ -1,6 +1,7 @@
 """Tests for the FastAPI endpoints."""
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -10,6 +11,17 @@ from workrights_assistant import api
 from workrights_assistant.api import AskRequest, app
 
 client = TestClient(app)
+PILOT_QUESTIONS_FILE = Path(__file__).parent / "fixtures" / "pilot_questions.json"
+
+
+def get_pilot_question(question_id):
+    """Read one question from the reviewed Phase 3 evaluation set."""
+    pilot_questions = json.loads(PILOT_QUESTIONS_FILE.read_text(encoding="utf-8"))
+    return next(
+        question
+        for question in pilot_questions["questions"]
+        if question["id"] == question_id
+    )
 
 
 @pytest.fixture
@@ -103,6 +115,41 @@ def test_valid_question_with_evidence_calls_claude(mock_retrieval, mock_claude):
     )
 
 
+def test_ambiguous_pilot_question_gets_a_cautious_cited_answer(
+    mock_retrieval, mock_claude
+):
+    pilot_question = get_pilot_question("Q07")
+    source_id = pilot_question["expected_source_ids"][0]
+    mock_retrieval(
+        [
+            {
+                "score": 0.6,
+                "source_id": source_id,
+                "title": "Dismissal: your rights",
+                "canonical_url": "https://www.gov.uk/dismissal",
+                "text": "The guidance lists factors relevant to unfair dismissal.",
+            }
+        ]
+    )
+    _, response_body = mock_claude
+    response_body.update(
+        {
+            "answer": (
+                "The guidance lists factors that may matter, but there is not "
+                "enough information here to decide whether this dismissal was unfair."
+            ),
+            "source_ids": [source_id],
+        }
+    )
+
+    response = client.post("/ask", json={"question": pilot_question["question"]})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "answer"
+    assert "not enough information" in response.json()["answer"]
+    assert response.json()["citations"][0]["source_id"] == source_id
+
+
 @pytest.mark.parametrize(
     "question",
     [
@@ -112,7 +159,7 @@ def test_valid_question_with_evidence_calls_claude(mock_retrieval, mock_claude):
     ],
     ids=["pension", "pensions", "cv-writing"],
 )
-def test_clear_out_of_scope_question_returns_out_of_scope(question):
+def test_clear_out_of_scope_question_returns_out_of_scope(question, mock_claude):
     response = client.post("/ask", json={"question": question})
 
     assert response.status_code == 200
@@ -124,6 +171,7 @@ def test_clear_out_of_scope_question_returns_out_of_scope(question):
         ),
         "citations": [],
     }
+    assert mock_claude[0] == []
 
 
 @pytest.mark.parametrize(
@@ -215,27 +263,46 @@ def test_claude_can_abstain_when_retrieved_evidence_does_not_answer_question(
 
 
 def test_insufficient_evidence_can_cite_related_passages(mock_retrieval, mock_claude):
+    mock_retrieval(
+        [
+            {
+                "score": 0.5,
+                "source_id": "dismissal",
+                "title": "Dismissal: your rights",
+                "canonical_url": "https://www.gov.uk/dismissal",
+                "text": "A union representative can help if you are a union member facing dismissal.",
+            }
+        ]
+    )
     _, response_body = mock_claude
     response_body.update(
         {
             "status": "insufficient_evidence",
-            "answer": "The retrieved passage mentions paid annual leave.",
-            "source_ids": ["holiday-entitlement"],
+            "answer": (
+                "The retrieved passage mentions union help with dismissal, but "
+                "does not say whether you can join while unemployed."
+            ),
+            "source_ids": ["dismissal"],
         }
     )
 
-    response = client.post("/ask", json={"question": "Can I join a union?"})
+    response = client.post(
+        "/ask", json={"question": "Can I join a union if unemployed?"}
+    )
 
     assert response.status_code == 200
     assert response.json() == {
         "status": "insufficient_evidence",
-        "answer": "The retrieved passage mentions paid annual leave.",
+        "answer": (
+            "The retrieved passage mentions union help with dismissal, but "
+            "does not say whether you can join while unemployed."
+        ),
         "citations": [
             {
-                "source_id": "holiday-entitlement",
-                "title": "Holiday entitlement",
-                "excerpt": "Most workers are entitled to paid annual leave.",
-                "url": "https://www.gov.uk/holiday-entitlement-rights",
+                "source_id": "dismissal",
+                "title": "Dismissal: your rights",
+                "excerpt": "A union representative can help if you are a union member facing dismissal.",
+                "url": "https://www.gov.uk/dismissal",
             }
         ],
     }
