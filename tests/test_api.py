@@ -400,3 +400,65 @@ def test_invalid_evidence_threshold_returns_configuration_error(
 
     assert response.status_code == 500
     assert api.EVIDENCE_SCORE_THRESHOLD_ENV in response.json()["detail"]
+
+
+def test_api_does_not_send_previous_question_or_answer_to_next_request(
+    mock_retrieval, mock_claude
+):
+    calls, response_body = mock_claude
+    first_question = "How much paid holiday do I get? first-request-marker"
+    first_answer = "First response marker."
+    second_question = "How much paid holiday do I get? second-request-marker"
+
+    response_body["answer"] = first_answer
+    first_response = client.post("/ask", json={"question": first_question})
+    response_body["answer"] = "Second response marker."
+    second_response = client.post("/ask", json={"question": second_question})
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert len(calls) == 2
+    first_message = calls[0]["messages"][0]["content"]
+    second_message = calls[1]["messages"][0]["content"]
+    assert first_question in first_message
+    assert second_question in second_message
+    assert first_question not in second_message
+    assert first_answer not in second_message
+
+
+def test_question_answer_and_api_key_are_not_logged(
+    caplog, monkeypatch, mock_retrieval
+):
+    api_key = "stage7-dummy-key-marker"
+    question = "How much paid holiday do I get? stage7-question-marker"
+    answer = "Stage 7 answer marker."
+    response_body = {
+        "status": "answer",
+        "answer": answer,
+        "source_ids": ["holiday-entitlement"],
+    }
+    fake_response = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text=json.dumps(response_body))]
+    )
+    fake_client = SimpleNamespace(
+        messages=SimpleNamespace(create=lambda **request: fake_response)
+    )
+    client_keys = []
+
+    def create_fake_anthropic_client(api_key):
+        client_keys.append(api_key)
+        return fake_client
+
+    monkeypatch.setenv(api.ANTHROPIC_API_KEY_ENV, api_key)
+    monkeypatch.setenv(api.ANTHROPIC_MODEL_ENV, "test-model")
+    monkeypatch.setattr(api, "Anthropic", create_fake_anthropic_client)
+
+    with caplog.at_level("DEBUG"):
+        response = client.post("/ask", json={"question": question})
+
+    assert response.status_code == 200
+    assert response.json()["answer"] == answer
+    assert client_keys == [api_key]
+    assert api_key not in caplog.text
+    assert question not in caplog.text
+    assert answer not in caplog.text
